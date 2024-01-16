@@ -1,10 +1,9 @@
 require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
 const sequelize = require("./sequelize-client");
+const express = require("express");
+const router = require("./router");
+const bodyparser = require("body-parser");
 const app = express();
-const port = 3001;
-
 sequelize
   .sync()
   .then(() => {
@@ -13,20 +12,22 @@ sequelize
   .catch((error) => {
     console.error("Erreur de connexion à la base de données:", error);
   });
+// serve up production assets
+const cors = require("cors"); // Importez le module CORS
+// Configurer les options CORS
 const corsOptions = {
   origin: "http://localhost:3000", // Remplacez par l'URL de votre frontend
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
 };
-app.use(express.json());
-app.use(cors(corsOptions));
+// Activer CORS pour toutes les routes
+app.use(cors(corsOptions)); // serve up production assets
+app.use(bodyparser.json());
+app.use(bodyparser.urlencoded({ extended: true }));
 
-// Exemple de route
-app.get("/", (req, res) => {
-  res.json({ message: "Hello, World!" });
-});
+app.use(router);
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+const PORT = process.env.PORT || 5000;
+console.log(`Serveur démarré sur http://localhost:${PORT}`);
+app.listen(PORT);
